@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
  *
  * @author KarpovichA
  */
-@XmlRootElement(name = "books")
+@XmlRootElement(name = "book")
 @XmlSeeAlso(Book.class)
 public class Books extends ArrayList<Book> {
 
