@@ -6,7 +6,10 @@
 package by.carl.book;
 
 import java.io.Serializable;
+import javax.annotation.Generated;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -22,15 +25,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @NamedQueries ({
-    @NamedQuery (name = "Book.findByTitle", query = "SELECT b FROM Book b WHERE b.title = :title"),
+    @NamedQuery (name = "Book.findByAuthorAndTitle", query = "SELECT b FROM Book b WHERE b.author = :author and b.title = :title"),
+    @NamedQuery (name = "Book.findByAuthor", query = "SELECT b FROM Book b WHERE b.author = :author"),
     @NamedQuery (name = "Book.findAll", query = "SELECT b FROM Book b")
 })
 public class Book implements Serializable{
 
-    @Override
-    public String toString() {
-        return "Book{" + "title=" + title + ", pages=" + pages + '}';
-    }
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private long id;
+    private String title;
+    private String author;
+    private int pages;
+
 
     public String getTitle() {
         return title;
@@ -38,6 +45,14 @@ public class Book implements Serializable{
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     public int getPages() {
@@ -51,13 +66,15 @@ public class Book implements Serializable{
     public Book() {
     }
 
-    public Book(String title, int pages) {
+    public Book(String title, String author, int pages) {
         this.title = title;
+        this.author = author;
         this.pages = pages;
     }
-    @Id
-    private String title;
-    
-    private int pages;
+
+    @Override
+    public String toString() {
+        return "Book{" + "id=" + id + ", title=" + title + ", author=" + author + ", pages=" + pages + '}';
+    }
     
 }

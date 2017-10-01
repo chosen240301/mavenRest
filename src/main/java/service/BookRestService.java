@@ -29,18 +29,21 @@ import javax.ws.rs.core.Response;
 @Path("books")
 public class BookRestService {
 
-    @Path("/{title}/{pages}")
+    @Path("/{author}/{title}/{pages}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBook(@PathParam("title") String title, @PathParam("pages") int pages) {
+    public Response createBook(@PathParam("author") String author, @PathParam("title") String title, @PathParam("pages") int pages) {
         EntityManagerFactory emf
                 = Persistence.createEntityManagerFactory("BookPU");
         EntityManager em = emf.createEntityManager();
         try {
-            Book book = em.createNamedQuery("Book.findByTitle", Book.class).setParameter("title", title).getSingleResult();
+            Book book = em.createNamedQuery("Book.findByAuthorAndTitle", Book.class)
+                    .setParameter("author", author)
+                    .setParameter("title", title)
+                    .getSingleResult();
             return Response.notModified().build();
         } catch (NoResultException e) {
-            Book book = new Book(title, pages);
+            Book book = new Book(author, title, pages);
             em.getTransaction().begin();
             em.persist(book);
             em.flush();
@@ -51,22 +54,39 @@ public class BookRestService {
         }
     }
 
-    @Path("/{title}")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Book getBook(@PathParam("title") String title) {
+    @Path("/{author}/{title}")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
+    public Response getBooksByAuthor(@PathParam("author") String author, @PathParam("title") String title) {
         EntityManagerFactory emf
                 = Persistence.createEntityManagerFactory("BookPU");
         EntityManager em = emf.createEntityManager();
-        try {
-            Book book = em.createNamedQuery("Book.findByTitle", Book.class).setParameter("title", title).getSingleResult();
-            return book;
-        } catch (NoResultException e) {
-            return null;
-        }
+
+        Book book = em.createNamedQuery("Book.findByAuthorAndTitle", Book.class)
+                .setParameter("author", author)
+                .setParameter("title", title)
+                .getSingleResult();
+        em.close();
+        emf.close();
+        return Response.ok(book).build();
     }
-    
+
+    @GET
+    @Path("/{author}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getBookByAuthorAndTitle(@PathParam("author") String author) {
+        EntityManagerFactory emf
+                = Persistence.createEntityManagerFactory("BookPU");
+        EntityManager em = emf.createEntityManager();
+
+        Books books = new Books(em.createNamedQuery("Book.findByAuthor", Book.class)
+                .setParameter("author", author)
+                .getResultList());
+        em.close();
+        emf.close();
+        return Response.ok(books).build();
+    }
+
     @GET
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
